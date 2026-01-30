@@ -1,0 +1,57 @@
+#!/bin/bash
+
+BG_COLOR="#282a36"
+ACCENT_COLOR="#f1fa8c"
+INFO_COLOR="#bd93f9"
+FONT="0xProto-Nerd-Font"
+CACHE_DIR="$HOME/.cache/vls"
+
+mkdir -p "$CACHE_DIR"
+EXTENSIONS="mp4|mkv|avi|mov|flv|wmv|webm"
+
+get_unique_id() {
+	local file_stat=$(stat -c "%d:%i:%Y" "$1" 2>/dev/null)
+	echo -n "$file_stat" | md5sum | awk '{print $1}'
+}
+
+trap "rm -f /tmp/vls_*" EXIT
+
+find . -maxdepth 1 -regextype posix-extended -iregex ".*\.($EXTENSIONS)" | while read -r file; do
+
+	filename=$(basename "$file")
+	file_id=$(get_unique_id "$file")
+	cache_file="$CACHE_DIR/${file_id}.png"
+
+	if [ ! -f "$cache_file" ]; then
+		duration=$(ffprobe -v error -show_entries format=duration -sexagesimal -of default=noprint_wrappers=1:nokey=1 "$file" | cut -d. -f1)
+		codec=$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "$file" | tr '[:lower:]' '[:upper:]')
+		size=$(du -h "$file" | awk '{print $1}')
+		info_line="[$codec] | $duration | $size"
+
+		temp_thumb=$(mktemp /tmp/vls_t_XXXXXX.png)
+		ffmpegthumbnailer -i "$file" -o "$temp_thumb" -s 128 -t 5 -f &>/dev/null
+
+		if [ -s "$temp_thumb" ]; then
+			# CAMBIOS CLAVE:
+			# 1. -gravity NorthWest: El punto (0,0) ahora es la esquina superior izquierda.
+			# 2. Coordenadas ajustadas: El título empieza a 35px del techo, la info a 75px.
+			magick "$temp_thumb" \
+				-background "$BG_COLOR" -gravity center -extent 128x128 \
+				\( -size 800x128 xc:"$BG_COLOR" \
+				-gravity NorthWest \
+				-font "$FONT" -fill "$ACCENT_COLOR" -pointsize 16 \
+				-annotate +20+35 "  $filename" \
+				-fill "$INFO_COLOR" -pointsize 11 \
+				-annotate +25+75 "$info_line" \
+				\) \
+				+append -bordercolor "$BG_COLOR" -border 5 "$cache_file"
+
+			rm -f "$temp_thumb"
+		fi
+	fi
+
+	if [ -f "$cache_file" ]; then
+		viu "$cache_file"
+		echo ""
+	fi
+done
