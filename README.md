@@ -1,4 +1,4 @@
-#  vls (Visual Video Lister)
+# 🎞️ vls (Visual Video Lister)
 
 vls is a high-performance, visual CLI alternative to ls for media files. It
 generates beautiful, informative preview cards directly in your terminal,
