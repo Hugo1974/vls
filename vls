@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#!/bin/bash
+# vls - Visual Video Lister
+# Copyright (C) 2026 Hugo Morago Martín
+# Licensed under the terms of the GNU GPLv3
+
 BG_COLOR="#282a36"
 ACCENT_COLOR="#f1fa8c"
 INFO_COLOR="#bd93f9"
