@@ -68,17 +68,6 @@ Simply navigate to a folder containing videos and run:
 vls
 ```
 
-⚙️ Configuration
-
-The script stores its cache in ~/.cache/vls. If you want to force a refresh of
-the thumbnails (for example, after changing the font or colors), simply clear
-the cache:
-
-```bash
-
-rm -rf ~/.cache/vls/\*
-```
-
 ## ⚖️ License
 
 Copyright (C) 2026 Hugo Morago Martín
